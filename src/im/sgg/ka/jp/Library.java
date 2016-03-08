@@ -40,7 +40,7 @@ public class Library {
     }
 
     public void addBook(String name, String author, String genre){
-        outln("Adding the book \""+name+"\" by "+author+", "+genre+".");
+        outln("\nAdding the book \""+name+"\" by "+author+", "+genre+".");
         if (isGenreOk(genre)) genre=getGenre(genre);
         else {outError("Incorrect genre \""+genre+"\".");return;}
         if (isBookInLibrary(name,author,genre)) {
