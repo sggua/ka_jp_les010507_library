@@ -17,7 +17,9 @@ public class Library {
     private int byGenreID;
     private int byAuthorID;
     private int searchCounter;
+    private int searchIteration;
     private int lastSearch = -1;    // 0 - byGenre, 1 - byAuthor
+    private String lastSearchKey;
     private int searchPerCall;
     private int unicID;             // position in array of books
     private int qtyOfBooks;
@@ -35,10 +37,6 @@ public class Library {
         this.sorted = new String[5][RECORD_LENGTH];
         this.byGenre = new String[genres.length][5][RECORD_LENGTH];
         this.byAuthor = new String[5][5][RECORD_LENGTH];
-    }
-
-    public int getSearchPerCall() {
-        return searchPerCall;
     }
 
     public void addBook(String name, String author, String genre){
@@ -93,26 +91,30 @@ public class Library {
 
 
     public void findByGenre(String genre){
-        if (lastSearch!=0) {
+        if (lastSearch!=0 || ! lastSearchKey.equals(genre)) {
             lastSearch=0;
             searchCounter=0;
+            searchIteration=1;
+            lastSearchKey=genre;
         }
         findByGenre(genre,searchCounter);
         searchCounter+=searchPerCall;
+        searchIteration++;
     }
     public void findbyAuthor(String author){
-        if (lastSearch!=1) {
+        if (lastSearch!=1 || ! lastSearchKey.equals(author)) {
             lastSearch=1;
             searchCounter=0;
+            searchIteration=1;
+            lastSearchKey=author;
         }
         findbyAuthor(author,searchCounter);
         searchCounter+=searchPerCall;
+        searchIteration++;
     }
-    public void findBook(){
 
-    }
-    public void findByGenre(String genre, int from){
-        outln("Searching books by genre \""+genre+"\"");
+    private void findByGenre(String genre, int from){
+        outln("\nSearching books by genre \""+genre+"\"\tIteration #"+searchIteration);
         int id = getGenID(genre);
         if (id<0) {
             outError("Incorrect genre: "+genre);
@@ -121,16 +123,23 @@ public class Library {
         int to = from+searchPerCall;
         if (to>byGenre[id].length) to = byGenre[id].length;
         for (int i=from; i<to; i++)
-            if (isArray(byGenre[id]) && byGenre[id][i]!=null)
-                outln("["+genre+"]\t" + byGenre[id][i][0]
+            if (isArray(byGenre[id]) && byGenre[id][i]!=null && byGenre[id][i][0]!=null && byGenre[id][i][1]!=null)
+                outln("\t["+genre+"]\t" + byGenre[id][i][0]
                         +", "+byGenre[id][i][1]);
     }
 
-    public void findbyAuthor(String author, int from){
+    private void findbyAuthor(String author, int from){
+        outln("\nSearching books by author \""+author+"\"\tIteration #"+searchIteration);
         int id=getAuthorID(author);
-        for (int i=from; i<from+searchPerCall; i++)
-            if (byAuthor[id][i]!=null)
-            outln("["+author+"]\t" + byAuthor[id][i][0]+", "+byAuthor[id][i][1]);
+        if (id<0) {
+            outError("Author not found: "+author);
+            return;
+        }
+        int to = from+searchPerCall;
+        if (to>byAuthor[id].length) to = byAuthor[id].length;
+        for (int i=from; i<to; i++)
+            if (byAuthor[id][i]!=null && byAuthor[id][i][0]!=null && byAuthor[id][i][1]!=null)
+                outln("\t["+author+"]\t" + byAuthor[id][i][0]+", "+byAuthor[id][i][1]);
     }
 
 

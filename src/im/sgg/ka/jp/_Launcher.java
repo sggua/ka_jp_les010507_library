@@ -24,8 +24,13 @@ public class _Launcher {
         lib.findByGenre("Computers");
         lib.findByGenre("Computers");
         lib.findByGenre("Computers");
+        lib.findByGenre("Computers");
 
         lib.findbyAuthor("Oleg Yuschenko");
+        lib.findbyAuthor("Oleg Yuschenko");
+        lib.findbyAuthor("Oleg Yuschenko");
+
+        lib.findbyAuthor("Linus Torvalds");
 
         lib.findByGenre("Computers");
 
