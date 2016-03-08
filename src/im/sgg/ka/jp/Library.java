@@ -9,13 +9,11 @@ public class Library {
     private String[] headLine = {"Name","Author","Genre"} ;
     private int RECORD_LENGTH=headLine.length;
     private String[][] books;
-    private String[][] sorted;
     private String[] genres = {"Fantasy","Food","Computers","Fiction","History"};
     private String[][][] byGenre;
     private String[][][] byAuthor;
+    private String[][] byABC;
     private String[] authors;
-    private int byGenreID;
-    private int byAuthorID;
     private int searchCounter;
     private int searchIteration;
     private int lastSearch = -1;    // 0 - byGenre, 1 - byAuthor
@@ -26,6 +24,8 @@ public class Library {
     private int qtyOfAuthors;
     private int[] qtyOfBooksByGenre = new int[genres.length];
     private int[] qtyOfBooksByAuthor = new int[1];
+    private int[] qtyOfBooksByABC;
+
 
     public Library() {
         this(5);
@@ -34,9 +34,9 @@ public class Library {
         this.searchPerCall = searchPerCall;
         this.books = new String[5][RECORD_LENGTH];
         this.authors = new String[5];
-        this.sorted = new String[5][RECORD_LENGTH];
         this.byGenre = new String[genres.length][5][RECORD_LENGTH];
         this.byAuthor = new String[5][5][RECORD_LENGTH];
+        this.byABC = new String[5][RECORD_LENGTH];
     }
 
     public void addBook(String name, String author, String genre){
