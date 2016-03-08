@@ -19,6 +19,10 @@ public class _Launcher {
         lib.addBook("Enterprise Web Development",    "Yakov Fain",       "computers");
 
         lib.addBook("Java for Dummies", "Barry Burd",       "Computers");
+        lib.addBook("Java for Dummies", "Nobody Home",      "Computers");
+        lib.addBook("Java for Dummies", "Angry Writer",     "Computers");
+
+        lib.addBook("Book of Numbers", "Larry Spiegel",     "Crime");
 
         lib.findByGenre("Computer");
         lib.findByGenre("Computers");
@@ -33,6 +37,12 @@ public class _Launcher {
         lib.findbyAuthor("Linus Torvalds");
 
         lib.findByGenre("Computers");
+
+        lib.findbyName("Java for Dummies");
+
+        lib.findbyNameBeginning("Java");
+
+        lib.findbyNameBeginning("Book");
 
     }
 }

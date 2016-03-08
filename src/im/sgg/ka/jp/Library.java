@@ -9,19 +9,21 @@ public class Library {
     private String[] headLine = {"Name","Author","Genre"} ;
     private int RECORD_LENGTH=headLine.length;
     private String[][] books;
-    private String[] genres = {"Fantasy","Food","Computers","Fiction","History"};
+    private String[] genres = {"Fantasy","Food","Computers","Fiction","History","Crime"};
     private String[][][] byGenre;
     private String[][][] byAuthor;
-    private String[][] byABC;
+    private String[][][] byABC;
     private String[] authors;
+    private String[] ABC;
     private int searchCounter;
     private int searchIteration;
-    private int lastSearch = -1;    // 0 - byGenre, 1 - byAuthor
+    private int lastSearch = -1;    // 0 - byGenre, 1 - byAuthor, 2 - byName, 3 - byText
     private String lastSearchKey;
     private int searchPerCall;
     private int unicID;             // position in array of books
     private int qtyOfBooks;
     private int qtyOfAuthors;
+    private int qtyOfLetters;
     private int[] qtyOfBooksByGenre = new int[genres.length];
     private int[] qtyOfBooksByAuthor = new int[1];
     private int[] qtyOfBooksByABC;
@@ -34,9 +36,10 @@ public class Library {
         this.searchPerCall = searchPerCall;
         this.books = new String[5][RECORD_LENGTH];
         this.authors = new String[5];
+        this.ABC = new String[5];
         this.byGenre = new String[genres.length][5][RECORD_LENGTH];
         this.byAuthor = new String[5][5][RECORD_LENGTH];
-        this.byABC = new String[5][RECORD_LENGTH];
+        this.byABC = new String[5][5][RECORD_LENGTH];
     }
 
     public void addBook(String name, String author, String genre){
@@ -48,11 +51,11 @@ public class Library {
             return;
         }
         unicID++;
-        qtyOfBooks++;
-
         addBookToBookList   (name, author, genre);
         addBookToGenreList  (name, author, genre);
         addBookToAuthorList (name, author, genre);
+        addBookToABCList    (name, author, genre);
+        qtyOfBooks++;
 
     }
 
@@ -88,6 +91,19 @@ public class Library {
         outln("\tdone.");
     }
 
+    private void addBookToABCList(String name, String author, String genre){
+        out("\t\t to the ABC list . . . . .");
+        String firstLetter = String.valueOf(name.charAt(0));
+        int id = getABCID(firstLetter);
+        addABCLetter(firstLetter);
+        int maxId = getByABCMaxIDX(firstLetter);
+        addByABC(id);
+        byABC[id][maxId][0]=name;
+        byABC[id][maxId][1]=author;
+        byABC[id][maxId][2]=genre;
+        qtyOfBooksByABC[id]++;
+        outln("\tdone.");
+    }
 
 
     public void findByGenre(String genre){
@@ -113,6 +129,30 @@ public class Library {
         searchIteration++;
     }
 
+    public void findbyName(String name){
+        if (lastSearch!=2 || ! lastSearchKey.equals(name)) {
+            lastSearch=2;
+            searchCounter=0;
+            searchIteration=1;
+            lastSearchKey=name;
+        }
+        findbyNameInABC(name);
+        searchCounter+=searchPerCall;
+        searchIteration++;
+    }
+
+    public void findbyNameBeginning(String text){
+        if (lastSearch!=3 || ! lastSearchKey.equals(text)) {
+            lastSearch=3;
+            searchCounter=0;
+            searchIteration=1;
+            lastSearchKey=text;
+        }
+        findbyNameBeginningInABC(text);
+        searchCounter+=searchPerCall;
+        searchIteration++;
+    }
+
     private void findByGenre(String genre, int from){
         outln("\nSearching books by genre \""+genre+"\"\tIteration #"+searchIteration);
         int id = getGenID(genre);
@@ -130,7 +170,7 @@ public class Library {
 
     private void findbyAuthor(String author, int from){
         outln("\nSearching books by author \""+author+"\"\tIteration #"+searchIteration);
-        int id=getAuthorID(author);
+        int id=findAuthorID(author);
         if (id<0) {
             outError("Author not found: "+author);
             return;
@@ -142,10 +182,45 @@ public class Library {
                 outln("\t["+author+"]\t" + byAuthor[id][i][0]+", "+byAuthor[id][i][1]);
     }
 
+    private void findbyNameInABC(String name){
+        String firstLetter = String.valueOf(name.charAt(0)).toUpperCase();
+        outln("\nSearching books by name \""+name+"\"\tIteration #"+searchIteration);
+        int id=findABCID(firstLetter);
+        if (id<0) {
+            outError("ABC block not found: "+firstLetter);
+            return;
+        }
+        int to = byABC[id].length;
+        for (int i=0; i<to; i++)
+            if (byABC[id][i]!=null && byABC[id][i][0]!=null && byABC[id][i][1]!=null && byABC[id][i][2]!=null
+                    && byABC[id][i][0].equals(name))
+                outln("\t["+name+"]\t" +byABC[id][i][1]+", "+byABC[id][i][2]);
+    }
+
+    private void findbyNameBeginningInABC(String name){
+        String firstLetter = String.valueOf(name.charAt(0)).toUpperCase();
+        outln("\nSearching books by text \""+name+"\"\tIteration #"+searchIteration);
+        int id=findABCID(firstLetter);
+        if (id<0) {
+            outError("ABC block not found: "+firstLetter);
+            return;
+        }
+        int to = byABC[id].length;
+        for (int i=0; i<to; i++)
+            if (byABC[id][i]!=null && byABC[id][i][0]!=null && byABC[id][i][1]!=null && byABC[id][i][2]!=null
+                    && byABC[id][i][0].toLowerCase().contains(name.toLowerCase()))
+                outln("\t["+name+"]\t" +byABC[id][i][0]+", "+byABC[id][i][1]+", "+byABC[id][i][2]);
+    }
+
 
     private int getByAuthorMaxIDX(String a) {
         if (qtyOfBooksByAuthor==null) return 0;
         else return qtyOfBooksByAuthor[getAuthorID(a)];
+    }
+
+    private int getByABCMaxIDX(String abc) {
+        if (qtyOfBooksByABC==null) return 0;
+        else return qtyOfBooksByABC[getABCID(abc)];
     }
 
     private int getByGenreMaxIDX(String g) {
@@ -154,12 +229,36 @@ public class Library {
 
     private int getAuthorID(String a){
         if (authors==null || authors.length<1) return -1;
-        for (int i=0;i<authors.length;i++){
-            if (authors[i]!=null && authors[i].equals(a)) return i;
-            if (authors[i]==null) return i;
-        }
-        return qtyOfAuthors; // new author
+        return getID(authors,a);
     }
+    private int getABCID(String ch){
+        if (ABC==null || ABC.length<1) return -1;
+        return getID(ABC,ch);
+    }
+
+    private int getID (String[] arr, String str){
+        for (int i=0;i<arr.length;i++){
+            if (arr[i]!=null && arr[i].equals(str)) return i;
+            if (arr[i]==null) return i;
+        }
+        return arr.length;
+    }
+
+    private int findAuthorID(String a){
+        if (authors==null || authors.length<1) return -1;
+        return findID(authors,a);
+    }
+    private int findABCID(String a){
+        if (ABC==null || ABC.length<1) return -1;
+        return findID(ABC,a);
+    }
+    private int findID (String[] arr, String str){
+        for (int i=0;i<arr.length;i++){
+            if (arr[i]!=null && arr[i].equals(str)) return i;
+        }
+        return -1;
+    }
+
     private int getGenID(String g){
         for (int i=0;i<genres.length;i++){
             if (genres[i].equals(g)) return i;
@@ -199,14 +298,36 @@ public class Library {
         }
     }
 
+    private void addABCLetter(String str){
+        if (! existsABCLetter(str)) {
+            if (ABC==null || ABC.length-5<=qtyOfLetters) addABCs();
+            ABC[qtyOfLetters]=str;
+            while (qtyOfBooksByABC==null || qtyOfBooksByABC.length-1<qtyOfLetters) {
+                qtyOfBooksByABC=addArrayCells(qtyOfBooksByABC);
+            }
+            qtyOfBooksByABC[qtyOfLetters]=0;
+            qtyOfLetters++;
+        }
+    }
+
     private boolean existsAuthor(String a){
         for (String aut:authors) if (aut!=null && aut.equals(a)) return true;
+        return false;
+    }
+    private boolean existsABCLetter(String abc){
+        if (ABC!=null) {
+            for (String letter : ABC) if (letter != null && letter.equals(abc)) return true;
+        }
         return false;
     }
 
     private void addAuthors(){
         if (! isAuthorsOK() ) return;
         authors = addArrayCells(authors);
+    }
+    private void addABCs(){
+        if (! isABCOK() ) return;
+        ABC = addArrayCells(ABC);
     }
 
     private void addBooks(){
@@ -221,9 +342,33 @@ public class Library {
 
     private void addByAuthor(int authID){
         if (! isByAuthorOK() ) return;
+        if (byAuthor.length<=authID) byAuthor = addArrayCells(byAuthor);
+        if (byAuthor[authID] == null) byAuthor[authID] = new String[5][RECORD_LENGTH];
         if (qtyOfBooksByAuthor==null || qtyOfBooksByAuthor[authID]>=byAuthor[authID].length ){
             byAuthor[authID] = addArrayCells(byAuthor[authID]);
         }
+    }
+
+    private void addByABC(int abcID){
+        if (! isByABCOK() ) return;
+        if (qtyOfBooksByABC==null || qtyOfBooksByABC[abcID]>=byABC[abcID].length-1 ){
+            byABC[abcID] = addArrayCells(byABC[abcID]);
+        }
+    }
+
+    private String[][][] addArrayCells (String[][][] arr) {
+        int newSize = (int) (arr.length * 1.50);    // +50%
+        if (newSize < 5) newSize = 5;    // tail for 5 records if short array
+        String[][][] newArray = new String[newSize][][];
+        for (int i = 0; i < arr.length; i++) {
+            if (arr[i] != null && arr[i][0] != null)
+                newArray[i]=arr[i];
+                for (int j = 0; j < arr[i].length; j++) {
+                    if (arr[i][j] != null && arr[i][j][0] != null)
+                        System.arraycopy(arr[i][j], 0, newArray[i][j], 0, arr[i][j].length);
+                }
+        }
+        return newArray;
     }
 
     private String[][] addArrayCells (String[][] arr) {
@@ -239,8 +384,8 @@ public class Library {
 
     private int[] addArrayCells (int[] arr) {
         int newSize;
-        if (arr==null) {
-            newSize = 3;    // +3
+        if (arr==null || arr.length<5) {
+            newSize = 5;    // =5
         } else {
             newSize = (int) (arr.length * 1.30);    // +30%
         }
@@ -265,6 +410,13 @@ public class Library {
         }
         return true;
     }
+    private boolean isByABCOK(){
+        if (! isArray(byABC)) {
+            outError("byABC=null or empty");
+            return false;
+        }
+        return true;
+    }
     private boolean isByGenreOK(){
         if (! isArray(byGenre)) {
             outError("byGenre=null or empty");
@@ -284,6 +436,14 @@ public class Library {
     private boolean isAuthorsOK(){
         if (! isArray(authors)) {
             outError("authors=null or empty");
+            return false;
+        }
+        return true;
+    }
+
+    private boolean isABCOK(){
+        if (! isArray(ABC)) {
+            outError("ABC=null or empty");
             return false;
         }
         return true;
